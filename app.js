@@ -266,143 +266,39 @@
     $('#modalTitle').textContent=title;$('#modalBody').innerHTML=body;$('#modalFooter').innerHTML=footer;$('#modalBackdrop').hidden=false;document.body.style.overflow='hidden';
     $$('[data-icon]', $('#modalBackdrop')).forEach(el=>{el.innerHTML=icon(el.dataset.icon)});
   }
-   <button class="btn" data-action="order-add-item" data-id="${o.id}">
-  ${icon('plus')} Tambah Item Tagihan
-</button>
-
-<button class="btn" data-action="order-stock-use" data-id="${o.id}">
-  ${icon('boxes')} Pemakaian Stok
-</button>
   function closeModal(){ $('#modalBackdrop').hidden=true;$('#modalBody').innerHTML='';$('#modalFooter').innerHTML='';document.body.style.overflow=''; }
-// ===== IDN-GO: TAMBAH ITEM KE TAGIHAN =====
-function addBillItemForm(id){
-  const o=getOrder(id);
-  if(!o)return;
-
-  const active=data.products.filter(p=>p.active!==false);
-
-  openModal('Tambah Item Tagihan',
-    `<form id="billItemForm">
-      <div class="field">
-        <label>Produk</label>
-        <select name="productId" required>
-          ${active.map(p=>`
-            <option value="${p.id}">
-              ${esc(p.name)} · ${rupiah(p.price)}/${esc(p.unit)}
-            </option>
-          `).join('')}
-        </select>
-      </div>
-      <div class="field">
-        <label>Jumlah</label>
-        <input name="qty" type="number" min="0.1" step="0.1" value="1" required>
-      </div>
-    </form>`,
-    `<button class="btn" data-action="modal-close">Batal</button>
-     <button class="btn btn-primary" data-action="bill-item-save" data-id="${id}">Tambah ke Tagihan</button>`
-  );
-}
-
-function saveBillItem(id){
-  const o=getOrder(id);
-  const f=$('#billItemForm');
-  if(!o||!f.reportValidity())return;
-
-  const fd=new FormData(f);
-  const p=data.products.find(x=>x.id===fd.get('productId'));
-  const qty=Number(fd.get('qty'));
-
-  if(!p||qty<=0)return;
-
-  o.items.push({
-    productId:p.id,
-    name:p.name,
-    qty,
-    unit:p.unit,
-    price:Number(p.price)
-  });
-
-  o.subtotal=o.items.reduce((s,i)=>s+i.qty*i.price,0);
-  o.total=Math.max(0,o.subtotal-Number(o.discount||0));
-
-  log('Item tambahan pada pesanan',`${o.code} · ${p.name} × ${qty}`);
-  saveData();
-  closeModal();
-  showOrderDetail(id);
-  toast('Item berhasil ditambahkan ke tagihan.');
-}
-// ===== AKHIR TAMBAH ITEM TAGIHAN =====
-// ===== IDN-GO: PEMAKAIAN STOK PER PESANAN =====
-function stockUsageForm(id){
-  const o=getOrder(id);
-  if(!o)return;
-
-  openModal('Pemakaian Stok',
-    `<form id="stockUsageForm">
-      <div class="field">
-        <label>Barang</label>
-        <select name="stockId" required>
-          ${data.stock.map(s=>`
-            <option value="${s.id}">
-              ${esc(s.name)} · tersedia ${s.qty} ${esc(s.unit)}
-            </option>
-          `).join('')}
-        </select>
-      </div>
-      <div class="field">
-        <label>Jumlah Pemakaian</label>
-        <input name="qty" type="number" min="0.1" step="0.1" value="1" required>
-      </div>
-      <div class="field">
-        <label>Catatan</label>
-        <input name="note" placeholder="Contoh: Untuk cucian pelanggan">
-      </div>
-    </form>`,
-    `<button class="btn" data-action="modal-close">Batal</button>
-     <button class="btn btn-primary" data-action="stock-use-save" data-id="${id}">Catat Pemakaian</button>`
-  );
-}
-
-function saveStockUsage(id){
-  const o=getOrder(id);
-  const f=$('#stockUsageForm');
-  if(!o||!f.reportValidity())return;
-
-  const fd=new FormData(f);
-  const s=data.stock.find(x=>x.id===fd.get('stockId'));
-  const qty=Number(fd.get('qty'));
-
-  if(!s||qty<=0)return;
-
-  if(qty>s.qty){
-    toast('Stok tidak mencukupi.','error');
-    return;
+  // ===== IDN-GO: TAMBAHAN ITEM TAGIHAN & PEMAKAIAN STOK =====
+  function addBillItemForm(id){
+    const o=getOrder(id);if(!o)return;
+    const products=data.products.filter(p=>p.active!==false);
+    if(!products.length){toast('Belum ada produk aktif di Produk & Kategori.','error');return;}
+    openModal('Tambah Item Tagihan',`<form id="billItemForm"><div class="field"><label>Produk</label><select name="productId" required>${products.map(p=>`<option value="${esc(p.id)}">${esc(p.name)} · ${rupiah(p.price)}/${esc(p.unit)}</option>`).join('')}</select></div><div class="field"><label>Jumlah</label><input name="qty" type="number" min="0.1" step="0.1" value="1" required></div></form>`,`<button class="btn" data-action="modal-close">Batal</button><button class="btn btn-primary" data-action="bill-item-save" data-id="${esc(id)}">Tambah</button>`);
   }
-
-  s.qty=Number(s.qty)-qty;
-
-  if(!o.stockUsed)o.stockUsed=[];
-
-  o.stockUsed.push({
-    stockId:s.id,
-    name:s.name,
-    qty,
-    unit:s.unit,
-    note:String(fd.get('note')||''),
-    at:nowISO()
-  });
-
-  log('Pemakaian stok dicatat',`${o.code} · ${s.name} ${qty} ${s.unit}`);
-  saveData();
-  closeModal();
-  showOrderDetail(id);
-  toast('Pemakaian stok berhasil dicatat.');
-}
-// ===== AKHIR PEMAKAIAN STOK =====
+  function saveBillItem(id){
+    const o=getOrder(id),form=$('#billItemForm');if(!o||!form||!form.reportValidity())return;
+    const fd=new FormData(form),p=data.products.find(x=>x.id===fd.get('productId')),qty=Number(fd.get('qty'));if(!p||qty<=0)return;
+    o.items.push({productId:p.id,name:p.name,qty,unit:p.unit,price:Number(p.price)});
+    o.subtotal=o.items.reduce((sum,i)=>sum+Number(i.qty||0)*Number(i.price||0),0);
+    o.discount=Math.min(Number(o.discount||0),o.subtotal);o.total=Math.max(0,o.subtotal-o.discount);
+    log('Item tambahan ditambahkan',`${o.code} · ${p.name} × ${qty}`);saveData();closeModal();showOrderDetail(id);toast('Item ditambahkan ke tagihan.');
+  }
+  function stockUsageForm(id){
+    const o=getOrder(id);if(!o)return;
+    if(!data.stock.length){toast('Belum ada barang di menu Stok.','error');return;}
+    openModal('Catat Pemakaian Stok',`<form id="stockUsageForm"><div class="field"><label>Barang stok</label><select name="stockId" required>${data.stock.map(s=>`<option value="${esc(s.id)}">${esc(s.name)} · tersedia ${s.qty} ${esc(s.unit)}</option>`).join('')}</select></div><div class="field"><label>Jumlah pemakaian</label><input name="qty" type="number" min="0.1" step="0.1" value="1" required></div><div class="field"><label>Catatan</label><input name="note" placeholder="Opsional"></div></form>`,`<button class="btn" data-action="modal-close">Batal</button><button class="btn btn-primary" data-action="stock-use-save" data-id="${esc(id)}">Catat Pemakaian</button>`);
+  }
+  function saveStockUsage(id){
+    const o=getOrder(id),form=$('#stockUsageForm');if(!o||!form||!form.reportValidity())return;
+    const fd=new FormData(form),s=data.stock.find(x=>x.id===fd.get('stockId')),qty=Number(fd.get('qty'));if(!s||qty<=0)return;
+    if(qty>Number(s.qty)){toast('Stok tidak mencukupi.','error');return;}
+    s.qty=Number(s.qty)-qty;o.stockUsed=o.stockUsed||[];o.stockUsed.push({stockId:s.id,name:s.name,qty,unit:s.unit,note:String(fd.get('note')||''),at:nowISO()});
+    log('Pemakaian stok dicatat',`${o.code} · ${s.name} ${qty} ${s.unit}`);saveData();closeModal();showOrderDetail(id);toast('Pemakaian stok tercatat.');
+  }
+  // ===== AKHIR TAMBAHAN ITEM & STOK =====
   function showOrderDetail(id){
     const o=getOrder(id);if(!o)return;const remaining=Math.max(0,o.total-o.paid);
     const images=(o.beforePhoto||o.afterPhoto)?`<div class="detail-section"><h4>Foto Kondisi Cucian</h4><div class="inline-actions">${o.beforePhoto?`<div><small class="muted">Sebelum</small><br><img class="photo-preview" src="${o.beforePhoto}" alt="Foto sebelum"></div>`:''}${o.afterPhoto?`<div><small class="muted">Sesudah</small><br><img class="photo-preview" src="${o.afterPhoto}" alt="Foto sesudah"></div>`:''}</div></div>`:'';
-    openModal(`Detail ${o.code}`,`<div class="order-top">${statusBadge(o.status)}${paymentBadge(o)}</div><div class="detail-grid" style="margin-top:14px"><div class="detail-box"><small>PELANGGAN</small><strong>${esc(o.customerName)}</strong></div><div class="detail-box"><small>NOMOR WHATSAPP</small><strong>${esc(o.phone)}</strong></div><div class="detail-box"><small>TANGGAL MASUK</small><strong>${dateTime(o.createdAt)}</strong></div><div class="detail-box"><small>ESTIMASI AMBIL</small><strong>${dateTime(o.dueAt)}</strong></div><div class="detail-box"><small>LOKASI RAK</small><strong>${esc(o.rack||'Belum ditentukan')}</strong></div><div class="detail-box"><small>PEMBAYARAN</small><strong>${rupiah(o.paid)} / ${rupiah(o.total)}</strong></div></div><div class="detail-section"><h4>Rincian Layanan</h4>${o.items.map(i=>`<div class="detail-item"><span>${esc(i.name)} · ${i.qty} ${esc(i.unit)}</span><strong>${rupiah(i.qty*i.price)}</strong></div>`).join('')}<div class="detail-item"><span>Subtotal</span><strong>${rupiah(o.subtotal)}</strong></div>${o.discount?`<div class="detail-item"><span>Diskon</span><strong>− ${rupiah(o.discount)}</strong></div>`:''}<div class="detail-item"><strong>Total</strong><strong>${rupiah(o.total)}</strong></div><div class="detail-item"><span>Sisa tagihan</span><strong>${rupiah(remaining)}</strong></div></div>${o.notes?`<div class="settings-note">Catatan: ${esc(o.notes)}</div>`:''}${images}<div class="detail-section no-print"><h4>Ubah Status / Pembayaran</h4><div class="form-grid"><div class="field"><label>Status pesanan</label><select id="detailStatus">${['Aktif','Proses','Selesai','Diambil'].map(s=>`<option ${o.status===s?'selected':''}>${s}</option>`).join('')}</select></div><div class="field"><label>Tambah pembayaran (Rp)</label><input id="detailPayment" type="number" min="0" value="0"></div><div class="field"><label>Lokasi rak</label><input id="detailRack" value="${esc(o.rack||'')}"></div><div class="field"><label>Foto kondisi (tambahan)</label><input id="detailPhoto" type="file" accept="image/*" capture="environment"></div></div></div>`,`<button class="btn" data-action="modal-close">Tutup</button><button class="btn" data-action="order-whatsapp" data-id="${o.id}">${icon('whatsapp')} WhatsApp</button><button class="btn" data-action="order-print" data-id="${o.id}">${icon('print')} Cetak Struk</button><button class="btn btn-primary" data-action="order-detail-save" data-id="${o.id}">Simpan Perubahan</button>`);
+    openModal(`Detail ${o.code}`,`<div class="order-top">${statusBadge(o.status)}${paymentBadge(o)}</div><div class="detail-grid" style="margin-top:14px"><div class="detail-box"><small>PELANGGAN</small><strong>${esc(o.customerName)}</strong></div><div class="detail-box"><small>NOMOR WHATSAPP</small><strong>${esc(o.phone)}</strong></div><div class="detail-box"><small>TANGGAL MASUK</small><strong>${dateTime(o.createdAt)}</strong></div><div class="detail-box"><small>ESTIMASI AMBIL</small><strong>${dateTime(o.dueAt)}</strong></div><div class="detail-box"><small>LOKASI RAK</small><strong>${esc(o.rack||'Belum ditentukan')}</strong></div><div class="detail-box"><small>PEMBAYARAN</small><strong>${rupiah(o.paid)} / ${rupiah(o.total)}</strong></div></div><div class="detail-section"><h4>Rincian Layanan</h4>${o.items.map(i=>`<div class="detail-item"><span>${esc(i.name)} · ${i.qty} ${esc(i.unit)}</span><strong>${rupiah(i.qty*i.price)}</strong></div>`).join('')}<div class="detail-item"><span>Subtotal</span><strong>${rupiah(o.subtotal)}</strong></div>${o.discount?`<div class="detail-item"><span>Diskon</span><strong>− ${rupiah(o.discount)}</strong></div>`:''}<div class="detail-item"><strong>Total</strong><strong>${rupiah(o.total)}</strong></div><div class="detail-item"><span>Sisa tagihan</span><strong>${rupiah(remaining)}</strong></div></div>${o.notes?`<div class="settings-note">Catatan: ${esc(o.notes)}</div>`:''}${images}${o.stockUsed?.length?`<div class="detail-section"><h4>Riwayat Pemakaian Stok</h4>${o.stockUsed.map(u=>`<div class="detail-item"><span>${esc(u.name)} · ${u.qty} ${esc(u.unit)}${u.note?` — ${esc(u.note)}`:''}</span><small>${dateTime(u.at)}</small></div>`).join('')}</div>`:''}<div class="detail-section no-print"><h4>Ubah Status / Pembayaran</h4><div class="form-grid"><div class="field"><label>Status pesanan</label><select id="detailStatus">${['Aktif','Proses','Selesai','Diambil'].map(s=>`<option ${o.status===s?'selected':''}>${s}</option>`).join('')}</select></div><div class="field"><label>Tambah pembayaran (Rp)</label><input id="detailPayment" type="number" min="0" value="0"></div><div class="field"><label>Lokasi rak</label><input id="detailRack" value="${esc(o.rack||'')}"></div><div class="field"><label>Foto kondisi (tambahan)</label><input id="detailPhoto" type="file" accept="image/*" capture="environment"></div></div></div>`,`<button class="btn" data-action="order-add-item" data-id="${o.id}">${icon('plus')} Tambah Item Tagihan</button><button class="btn" data-action="order-stock-use" data-id="${o.id}">${icon('boxes')} Pemakaian Stok</button><button class="btn" data-action="modal-close">Tutup</button><button class="btn" data-action="order-whatsapp" data-id="${o.id}">${icon('whatsapp')} WhatsApp</button><button class="btn" data-action="order-print" data-id="${o.id}">${icon('print')} Cetak Struk</button><button class="btn btn-primary" data-action="order-detail-save" data-id="${o.id}">Simpan Perubahan</button>`);
   }
   function saveOrderDetail(id){const o=getOrder(id);if(!o)return;const status=$('#detailStatus')?.value;if(status)o.status=status;const payment=Math.max(0,Number($('#detailPayment')?.value||0));if(payment>0){o.paid=Math.min(o.total,Number(o.paid||0)+payment);}o.rack=String($('#detailRack')?.value||'').trim();const file=$('#detailPhoto')?.files?.[0];const finish=async()=>{if(file){o.afterPhoto=await compressImage(file);}if(isPaid(o))awardPoints(o);log('Pesanan diperbarui',`${o.code} · status ${o.status}`);saveData();closeModal();renderPage();toast('Perubahan pesanan tersimpan.');};finish();}
   function updateOrderStatus(id){const o=getOrder(id);if(!o)return;const statuses=['Aktif','Proses','Selesai','Diambil'];const idx=statuses.indexOf(o.status);if(idx<0||idx===3)return;o.status=statuses[idx+1];if(o.status==='Diambil'&&!isPaid(o))toast('Pesanan ditandai diambil, tetapi masih ada sisa pembayaran.','error');if(isPaid(o))awardPoints(o);log('Status pesanan diperbarui',`${o.code} → ${o.status}`);saveData();renderPage();toast(`${o.code} sekarang ${o.status}.`);}
@@ -474,23 +370,10 @@ function saveStockUsage(id){
     case 'go-orders':setPage('orders');break;
     case 'order-filter':orderFilter=el.dataset.filter;renderPage();break;
     case 'order-detail':showOrderDetail(id);break;
-        // ===== AKSI ITEM TAGIHAN & PEMAKAIAN STOK =====
-case 'order-add-item':
-  addBillItemForm(id);
-  break;
-
-case 'bill-item-save':
-  saveBillItem(id);
-  break;
-
-case 'order-stock-use':
-  stockUsageForm(id);
-  break;
-
-case 'stock-use-save':
-  saveStockUsage(id);
-  break;
-// ===== AKHIR AKSI =====
+    case 'order-add-item':addBillItemForm(id);break;
+    case 'bill-item-save':saveBillItem(id);break;
+    case 'order-stock-use':stockUsageForm(id);break;
+    case 'stock-use-save':saveStockUsage(id);break;
     case 'order-next':updateOrderStatus(id);break;
     // TAMBAHAN: aksi tombol Hapus di kartu Daftar Pesanan.
     case 'order-delete':deleteOrder(id);break;
@@ -578,11 +461,10 @@ case 'stock-use-save':
   window.addEventListener('online',updateShell);window.addEventListener('offline',updateShell);window.addEventListener('resize',()=>{if(currentPage==='dashboard')drawDashboardChart();});
   document.addEventListener('keydown',event=>{if(event.key==='Escape'){closeModal();closeScanner();}if(event.key==='F2'){event.preventDefault();setPage('kasir');}});
 
-/* ===== FIX ICON IDN-GO ===== */
-$$('[data-icon]').forEach(el => {
-  el.innerHTML = icon(el.dataset.icon);
-});
-/* ===== END FIX ICON ===== */
+  // ===== FIX ICON: HYDRATE ALL DATA-ICON PLACEHOLDERS =====
+  // Isi SVG ikon untuk tombol header (menu, notifikasi), sidebar, dan lainnya.
+  $$(`[data-icon]`).forEach(el=>{el.innerHTML=icon(el.dataset.icon);});
+  // ===== END FIX ICON =====
 
   // First-run app boot.
   if(!data.history.length){log('Aplikasi dimulai','IDN-GO siap digunakan.');saveData();}
