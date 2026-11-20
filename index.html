@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#111111" />
+  <title>IDN-GO — Laundry Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand-lockup">
+        <div class="brand-mark"><span>IDN</span><b>GO</b></div>
+        <div class="brand-copy"><strong>IDN-GO</strong><small>LAUNDRY MANAGEMENT</small></div>
+      </div>
+      <div class="sidebar-label">MENU UTAMA</div>
+      <nav class="side-nav" id="mainNav" aria-label="Menu utama">
+        <button class="nav-link active" data-page="dashboard"><span class="nav-icon" data-icon="grid"></span><span>Dashboard</span></button>
+        <button class="nav-link" data-page="kasir"><span class="nav-icon" data-icon="receipt"></span><span>Kasir</span><kbd>F2</kbd></button>
+        <button class="nav-link" data-page="orders"><span class="nav-icon" data-icon="package"></span><span>Daftar Pesanan</span><span class="nav-count" id="activeOrderCount">0</span></button>
+        <button class="nav-link" data-page="products"><span class="nav-icon" data-icon="shirt"></span><span>Produk & Kategori</span></button>
+        <button class="nav-link" data-page="stock"><span class="nav-icon" data-icon="boxes"></span><span>Stok</span></button>
+        <button class="nav-link" data-page="customers"><span class="nav-icon" data-icon="users"></span><span>Pelanggan</span></button>
+        <button class="nav-link" data-page="expenses"><span class="nav-icon" data-icon="wallet"></span><span>Pengeluaran</span></button>
+        <button class="nav-link" data-page="reports"><span class="nav-icon" data-icon="chart"></span><span>Laporan</span></button>
+        <button class="nav-link" data-page="history"><span class="nav-icon" data-icon="history"></span><span>Riwayat</span></button>
+      </nav>
+      <div class="sidebar-label sidebar-label-bottom">LAYANAN PELANGGAN</div>
+      <nav class="side-nav">
+        <button class="nav-link" data-page="tracking"><span class="nav-icon" data-icon="scan"></span><span>Tracking Pesanan</span></button>
+        <button class="nav-link" data-page="booking"><span class="nav-icon" data-icon="truck"></span><span>Booking Jemput</span></button>
+        <button class="nav-link" data-page="settings"><span class="nav-icon" data-icon="settings"></span><span>Pengaturan</span></button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="offline-card"><span class="status-dot" id="connectionDot"></span><div><strong id="connectionText">Mode Online</strong><small>Data tersimpan di perangkat</small></div></div>
+        <div class="sidebar-user"><div class="avatar avatar-dark">ID</div><div class="user-copy"><strong id="sidebarBusinessName">IDN-GO Laundry</strong><small id="sidebarRole">Administrator</small></div><button class="icon-btn subtle" data-page="settings" title="Pengaturan"><span data-icon="more"></span></button></div>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="icon-btn menu-toggle" id="menuToggle" aria-label="Buka menu"><span data-icon="menu"></span></button>
+          <div class="breadcrumb"><span>Workspace</span><span class="crumb-slash">/</span><strong id="pageCrumb">Dashboard</strong></div>
+        </div>
+        <div class="topbar-right">
+          <div class="top-date"><span data-icon="calendar"></span><span id="todayLabel">—</span></div>
+          <button class="icon-btn notification-btn" id="notificationBtn" title="Notifikasi"><span data-icon="bell"></span><i id="notificationDot"></i></button>
+          <div class="top-divider"></div>
+          <div class="top-user"><div class="avatar">ID</div><div><strong id="topBusinessName">IDN-GO Laundry</strong><small id="topRole" title="Klik untuk mengganti mode akses">Owner</small></div></div>
+        </div>
+      </header>
+      <section class="page-wrap" id="pageContent" aria-live="polite"></section>
+      <footer class="app-footer"><span>© <span id="footerYear"></span> IDN-GO Laundry</span><span>Simple workflow. Clean business.</span></footer>
+    </main>
+  </div>
+
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+  <div class="modal-backdrop" id="modalBackdrop" hidden>
+    <section class="modal" id="modalPanel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <header class="modal-header"><div><p class="eyebrow" id="modalEyebrow">IDN-GO</p><h2 id="modalTitle">Detail</h2></div><button class="icon-btn" id="modalClose" aria-label="Tutup"><span data-icon="close"></span></button></header>
+      <div class="modal-body" id="modalBody"></div>
+      <footer class="modal-footer" id="modalFooter"></footer>
+    </section>
+  </div>
+  <div class="scanner-backdrop" id="scannerBackdrop" hidden>
+    <section class="scanner-panel">
+      <header class="modal-header"><div><p class="eyebrow">PEMINDAI</p><h2>Scan kode transaksi</h2></div><button class="icon-btn" id="scannerClose"><span data-icon="close"></span></button></header>
+      <div class="scanner-content"><video id="scannerVideo" playsinline></video><div class="scanner-hint" id="scannerHint">Arahkan kamera ke QR / barcode transaksi.</div><div class="scanner-manual"><input id="scannerManualInput" placeholder="Atau ketik kode transaksi…"><button class="btn btn-primary" id="scannerManualGo">Cari</button></div></div>
+    </section>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
