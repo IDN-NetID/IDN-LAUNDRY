@@ -429,6 +429,12 @@
   window.addEventListener('online',updateShell);window.addEventListener('offline',updateShell);window.addEventListener('resize',()=>{if(currentPage==='dashboard')drawDashboardChart();});
   document.addEventListener('keydown',event=>{if(event.key==='Escape'){closeModal();closeScanner();}if(event.key==='F2'){event.preventDefault();setPage('kasir');}});
 
+/* ===== FIX ICON IDN-GO ===== */
+$$('[data-icon]').forEach(el => {
+  el.innerHTML = icon(el.dataset.icon);
+});
+/* ===== END FIX ICON ===== */
+
   // First-run app boot.
   if(!data.history.length){log('Aplikasi dimulai','IDN-GO siap digunakan.');saveData();}
   renderPage();
