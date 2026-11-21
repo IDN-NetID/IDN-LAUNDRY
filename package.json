@@ -1,0 +1,17 @@
+{
+  "name": "idn-go",
+  "version": "1.0.0",
+  "description": "Aplikasi Kasir Laundry IDN-GO",
+  "private": true,
+  "scripts": {
+    "build:android": "npx cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/core": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.0.0",
+    "typescript": "^7.0.2"
+  }
+}
