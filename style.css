@@ -145,3 +145,12 @@
   .top-user{gap:7px;}
 }
 /* ===== AKHIR FIX MOBILE OWNER/KASIR ===== */
+@media print {@page{size:auto;margin:8mm}.receipt{width:100%!important;max-width:100%!important;margin:0!important;padding:12mm!important;font-size:15px!important;font-family:Arial,sans-serif!important}.receipt h2{font-size:25px!important;margin-bottom:10px!important}.receipt p,.receipt-row{font-size:14px!important;line-height:1.5!important}.receipt-total{font-size:18px!important}}
+.receipt{line-height:1.55}
+
+/* Revision: delivery address & refined report print */
+@media print{body{background:#fff!important}.report-hero{print-color-adjust:exact;-webkit-print-color-adjust:exact}.report-grid,.stat-grid{break-inside:avoid}.table-card,.card{box-shadow:none!important}}
+
+/* Estimasi kasir: tanggal terpisah dari jam 24 jam agar tidak mengikuti AM/PM browser. */
+.datetime-24{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(105px,.8fr);gap:8px;width:100%}.datetime-24 input,.datetime-24 select{width:100%;min-width:0}.datetime-24 .time-24-input{text-align:center;font-variant-numeric:tabular-nums;letter-spacing:.06em}.datetime-help{display:block;color:#888;font-size:9px;margin-top:5px}
+@media(max-width:650px){.datetime-24{grid-template-columns:minmax(0,1.2fr) minmax(95px,.8fr)}}
